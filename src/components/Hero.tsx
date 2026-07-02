@@ -12,7 +12,7 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 pt-10 sm:pt-28 lg:pt-0">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 pt-20 sm:pt-28 lg:pt-0">
       <CursorGlow />
 
       {/* Grid */}
