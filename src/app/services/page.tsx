@@ -235,14 +235,14 @@ function GridBackdrop() {
         }}
       />
       <div
-        className="absolute -top-32 right-[-10%] h-[28rem] w-[28rem] rounded-full blur-3xl"
+        className="absolute -top-32 right-[-10%] h-112 w-md rounded-full blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(168,85,247,0.18), transparent 70%)",
         }}
       />
       <div
-        className="absolute bottom-[-10%] left-[-8%] h-[24rem] w-[24rem] rounded-full blur-3xl"
+        className="absolute bottom-[-10%] left-[-8%] h-96 w-[24rem] rounded-full blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(124,58,237,0.14), transparent 70%)",
@@ -256,7 +256,7 @@ function DarkBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <div
-        className="absolute top-1/3 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full blur-3xl"
+        className="absolute top-1/3 left-1/2 h-128 w-lg -translate-x-1/2 rounded-full blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(168,85,247,0.14), transparent 70%)",
@@ -286,7 +286,7 @@ function ServiceCard({
       className={[
         "group relative rounded-2xl p-6 sm:p-7 backdrop-blur-xl border transition-colors duration-300",
         onDark
-          ? "bg-white/[0.03] border-white/10 hover:border-purple-400/40 hover:bg-white/[0.05]"
+          ? "bg-white/3 border-white/10 hover:border-purple-400/40 hover:bg-white/5"
           : "bg-white/70 border-purple-900/10 hover:border-purple-400/50 shadow-[0_4px_24px_rgba(124,58,237,0.06)] hover:shadow-[0_8px_32px_rgba(124,58,237,0.14)]",
       ].join(" ")}
     >
@@ -294,8 +294,8 @@ function ServiceCard({
         className={[
           "mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-transform duration-300 group-hover:scale-110",
           onDark
-            ? "bg-gradient-to-br from-purple-500/20 to-purple-700/10 border-purple-400/20"
-            : "bg-gradient-to-br from-purple-500/10 to-purple-700/5 border-purple-500/15",
+            ? "bg-linear-to-br from-purple-500/20 to-purple-700/10 border-purple-400/20"
+            : "bg-linear-to-br from-purple-500/10 to-purple-700/5 border-purple-500/15",
         ].join(" ")}
       >
         <Icon
@@ -326,7 +326,7 @@ function ServiceCard({
       <div
         className={[
           "absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none",
-          "bg-gradient-to-br from-purple-500/[0.04] to-transparent",
+          "bg-linear-to-br from-purple-500/4 to-transparent",
         ].join(" ")}
       />
     </motion.div>
@@ -373,7 +373,7 @@ function CategorySection({
               "mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide uppercase",
               onDark
                 ? "border-purple-400/25 bg-purple-500/10 text-purple-300"
-                : "border-purple-500/20 bg-purple-500/[0.06] text-purple-700",
+                : "border-purple-500/20 bg-purple-500/6 text-purple-700",
             ].join(" ")}
           >
             <Icon className="h-3.5 w-3.5" />
@@ -391,7 +391,7 @@ function CategorySection({
               i === category.heading.split(" ").length - 1 ? (
                 <span
                   key={i}
-                  className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent"
+                  className="bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent"
                 >
                   {word}
                 </span>
@@ -448,7 +448,7 @@ function ServicesHero() {
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0">
         <div
-          className="absolute top-0 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/3 rounded-full blur-3xl"
+          className="absolute top-0 left-1/2 h-144 w-xl -translate-x-1/2 -translate-y-1/3 rounded-full blur-3xl"
           style={{
             background:
               "radial-gradient(circle, rgba(168,85,247,0.22), transparent 70%)",
@@ -484,7 +484,7 @@ function ServicesHero() {
           className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white mb-6"
         >
           One team. Every service{" "}
-          <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
             your brand needs to grow.
           </span>
         </motion.h1>
@@ -517,7 +517,7 @@ function ServicesCTA() {
     >
       <div className="pointer-events-none absolute inset-0">
         <div
-          className="absolute bottom-0 left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 translate-y-1/3 rounded-full blur-3xl"
+          className="absolute bottom-0 left-1/2 h-120 w-120 -translate-x-1/2 translate-y-1/3 rounded-full blur-3xl"
           style={{
             background:
               "radial-gradient(circle, rgba(124,58,237,0.2), transparent 70%)",
@@ -536,7 +536,7 @@ function ServicesCTA() {
           className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4"
         >
           Not sure where to{" "}
-          <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
             start?
           </span>
         </motion.h2>
@@ -550,7 +550,7 @@ function ServicesCTA() {
         </motion.p>
         <motion.div variants={fadeUp}>
           <Link href="/contact">
-            <button className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_0_0_rgba(168,85,247,0.5)] transition-all duration-300 hover:shadow-[0_0_32px_4px_rgba(168,85,247,0.4)] hover:-translate-y-0.5">
+            <button className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-purple-500 to-purple-700 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_0_0_rgba(168,85,247,0.5)] transition-all duration-300 hover:shadow-[0_0_32px_4px_rgba(168,85,247,0.4)] hover:-translate-y-0.5">
               Contact Us
             </button>
           </Link>

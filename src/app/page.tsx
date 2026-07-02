@@ -13,8 +13,6 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <main className="bg-[#09090B]">
-      <Navbar />
-
       <Hero />
 
       <Services />
@@ -23,7 +21,6 @@ export default function Home() {
 
       <ClientsSection />
 
-      {/* <ClientsAndTestimonials /> */}
 
       <Work />
 
@@ -32,10 +29,7 @@ export default function Home() {
       <VbmLine />
 
       <MeetVisionXSection />
-
-      {/* <HowWeWorkSection /> */}
-
-      {/* <Footer /> */}
+      
     </main>
   );
 }
