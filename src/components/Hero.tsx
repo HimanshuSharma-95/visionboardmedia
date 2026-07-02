@@ -505,7 +505,7 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
           sm:flex-row
         "
         >
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center pb-10 ">
             <Link href="/contact">
               <button
                 className="
