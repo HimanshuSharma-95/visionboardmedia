@@ -137,7 +137,7 @@ const badges = [
 ];
 
 const marqueeStats = [
-  "50+ Brands Scaled",
+  "100+ Brands Scaled",
   "1M+ Combined Reach Generated",
   "4.9★ Average Client Rating",
   "10+ Years Combined Experience",

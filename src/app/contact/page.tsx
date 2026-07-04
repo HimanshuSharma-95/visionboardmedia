@@ -445,13 +445,13 @@ export default function ContactPage() {
             icon={Phone}
             label="Phone"
             value="+91 96531 11532"
-            href="tel:+11234567890"
+            href="tel:+919653111532"
           />
           <ContactInfoCard
             icon={MapPin}
             label="Address"
             value="Jalandhar, Punjab"
-            href="tel:+11234567890"
+            href="https://share.google/XpsxgEshPUhJSe2Ee"
           />
         </motion.div>
       </section>

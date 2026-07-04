@@ -128,7 +128,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <a
-                  href="tel:+11234567890"
+                  href="https://share.google/XpsxgEshPUhJSe2Ee"
                   className="flex items-center gap-2 group"
                 >
                   <MdOutlineLocationOn className="mt-0.5 h-4 w-4 text-white shrink-0 group-hover:text-purple-300" />
