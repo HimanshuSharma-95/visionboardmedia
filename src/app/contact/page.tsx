@@ -8,7 +8,7 @@ import { User, Mail, Phone, Send, CheckCircle2, MapPin } from "lucide-react";
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
 
-const WHATSAPP_NUMBER = "918847266521"; // country code 91 (India) + number
+const WHATSAPP_NUMBER = "919653111532"; // country code 91 (India) + number
 
 /* ------------------------------------------------------------------ */
 /*  Motion presets — same easing/timing as the rest of the site        */
