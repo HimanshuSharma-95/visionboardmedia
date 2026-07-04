@@ -19,7 +19,7 @@ const socials = [
     href: "https://wa.me/919653111532",
     label: "WhatsApp",
   },
-  { icon: FaFacebookF, href: "#", label: "Facebook" },
+  // { icon: FaFacebookF, href: "#", label: "Facebook" },
 ];
 
 const pages = [
@@ -133,7 +133,7 @@ export default function Footer() {
                 >
                   <MdOutlineLocationOn className="mt-0.5 h-4 w-4 text-white shrink-0 group-hover:text-purple-300" />
                   <span className="text-sm text-white leading-snug group-hover:text-purple-300">
-                    Los Angeles, CA, United States
+                    Jalandhar, Punjab
                   </span>
                 </a>
               </li>

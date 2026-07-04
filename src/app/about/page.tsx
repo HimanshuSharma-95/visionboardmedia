@@ -26,14 +26,37 @@ import {
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
 };
 
 const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1, delayChildren: 0.08 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
+
+/*
+  PERF NOTE
+  ---------
+  The biggest sources of mobile jank in the original file were:
+    1. `backdrop-blur-xl` on cards — backdrop-filter forces the browser to
+       re-composite everything behind the element on every scroll frame.
+       This is extremely expensive on mid/low-end mobile GPUs and is the
+       #1 cause of "heavy, jittery" scrolling. It's removed everywhere below
+       and replaced with solid/near-solid backgrounds that look almost
+       identical but cost nothing to paint.
+    2. Large `blur-3xl` decorative orbs rendered at full desktop size on
+       phones. These now scale down (blur + size) on small screens via
+       responsive classes, and use `will-change: transform` + a forced
+       compositing layer so the browser handles them once instead of
+       repainting them.
+    3. Framer Motion `whileHover` wired to 8 cards — hover never fires on
+       touch, but the listeners/spring config still add overhead. Swapped
+       for plain CSS `hover:` transitions (free on touch, cheap on desktop).
+    4. No CSS `contain` hints — added `contain: content` (via style) to each
+       section so the browser can isolate layout/paint work per section
+       instead of recalculating the whole page on scroll.
+*/
 
 /* ------------------------------------------------------------------ */
 /*  Backgrounds                                                        */
@@ -42,8 +65,9 @@ const stagger: Variants = {
 function GridBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Dot grid: hidden on mobile, it adds paint cost for very little visual payoff on small screens */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 hidden sm:block"
         style={{
           backgroundImage:
             "linear-gradient(to right, rgba(124,58,237,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(124,58,237,0.08) 1px, transparent 1px)",
@@ -51,17 +75,19 @@ function GridBackdrop() {
         }}
       />
       <div
-        className="absolute -top-32 right-[-10%] h-[28rem] w-[28rem] rounded-full blur-3xl"
+        className="absolute -top-24 right-[-10%] h-56 w-56 rounded-full blur-2xl will-change-transform sm:-top-32 sm:h-[28rem] sm:w-[28rem] sm:blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(168,85,247,0.18), transparent 70%)",
+          transform: "translateZ(0)",
         }}
       />
       <div
-        className="absolute bottom-[-10%] left-[-8%] h-[24rem] w-[24rem] rounded-full blur-3xl"
+        className="absolute bottom-[-10%] left-[-8%] h-48 w-48 rounded-full blur-2xl will-change-transform sm:h-[24rem] sm:w-[24rem] sm:blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(124,58,237,0.14), transparent 70%)",
+          transform: "translateZ(0)",
         }}
       />
     </div>
@@ -72,10 +98,11 @@ function DarkBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <div
-        className="absolute top-1/3 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full blur-3xl"
+        className="absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full blur-2xl will-change-transform sm:h-[32rem] sm:w-[32rem] sm:blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(168,85,247,0.14), transparent 70%)",
+          transform: "translateZ(0)",
         }}
       />
     </div>
@@ -160,11 +187,12 @@ function LogoHero() {
   return (
     <section
       ref={ref}
+      style={{ contain: "content" }}
       className="relative overflow-hidden bg-[#06070D] px-5 sm:px-8 lg:px-12 pt-32 sm:pt-40 pb-20 sm:pb-24"
     >
       <DarkBackdrop />
 
-      {/* Extra purple gradient layers */}
+      {/* Extra purple gradient layer — no filter, so it's basically free to paint */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.4]"
         style={{
@@ -176,10 +204,11 @@ function LogoHero() {
         }}
       />
       <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl will-change-transform sm:h-[38rem] sm:w-[38rem] sm:blur-[100px]"
         style={{
           background:
             "radial-gradient(circle, rgba(168,85,247,0.16), rgba(124,58,237,0.06) 45%, transparent 75%)",
+          transform: "translateZ(0)",
         }}
       />
       <div
@@ -208,16 +237,7 @@ function LogoHero() {
           className="whitespace-nowrap text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white mb-6"
         >
           We're{" "}
-          <span
-            className="shimmer-text bg-clip-text text-transparent bg-purple-500"
-            style={
-              {
-                // backgroundImage:
-                //   "linear-gradient(90deg, #c4b5fd 0%, #a855f7 20%, #f3e8ff 40%, #a855f7 60%, #7c3aed 80%, #c4b5fd 100%)",
-                // backgroundSize: "200% auto",
-              }
-            }
-          >
+          <span className="shimmer-text bg-clip-text text-transparent bg-purple-500">
             Vision Board Media.
           </span>
         </motion.h1>
@@ -259,6 +279,7 @@ function StorySection() {
   return (
     <section
       ref={ref}
+      style={{ contain: "content" }}
       className="relative bg-[#fbfaff] px-5 py-20 sm:px-8 sm:py-24 lg:px-12"
     >
       <GridBackdrop />
@@ -274,6 +295,8 @@ function StorySection() {
           <img
             src="/vbmlogo.png"
             alt="Vision Board Media"
+            loading="lazy"
+            decoding="async"
             className="w-90 sm:w-90 lg:w-90 h-auto object-contain"
           />
         </motion.div>
@@ -332,6 +355,7 @@ function TrustBadges() {
   return (
     <section
       ref={ref}
+      style={{ contain: "content" }}
       className="relative overflow-hidden bg-[#06070D] px-5 sm:px-8 lg:px-12 py-20 sm:py-28"
     >
       <DarkBackdrop />
@@ -362,12 +386,12 @@ function TrustBadges() {
           {badges.map((badge) => {
             const Icon = badge.icon;
             return (
+              /* backdrop-blur-xl removed — solid near-opaque background instead.
+                 Hover is now plain CSS (transition-transform), no JS/spring cost. */
               <motion.div
                 key={badge.label}
                 variants={fadeUp}
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.35, ease: EASE }}
-                className="group relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 transition-colors duration-300 hover:border-purple-400/40 hover:bg-white/[0.05]"
+                className="group relative rounded-2xl border border-white/10 bg-[#0f1019] p-6 transition-[transform,border-color,background-color] duration-300 hover:-translate-y-1.5 hover:border-purple-400/40 hover:bg-[#12131e]"
               >
                 <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-purple-400/20 bg-gradient-to-br from-purple-500/20 to-purple-700/10 transition-transform duration-300 group-hover:scale-110">
                   <Icon className="h-5 w-5 text-purple-300" />
@@ -397,7 +421,10 @@ function TrustBadges() {
             "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
         }}
       >
-        <div className="flex w-max animate-[marquee_28s_linear_infinite] items-center gap-8 py-3">
+        <div
+          className="flex w-max animate-[marquee_28s_linear_infinite] items-center gap-8 py-3 will-change-transform"
+          style={{ transform: "translateZ(0)" }}
+        >
           {loopedStats.map((stat, i) => (
             <div
               key={`${stat}-${i}`}
@@ -478,6 +505,7 @@ function SocialGrowthSection() {
   return (
     <section
       ref={ref}
+      style={{ contain: "content" }}
       className="relative bg-[#fbfaff] px-5 sm:px-8 lg:px-12 py-20 sm:py-28"
     >
       <GridBackdrop />
@@ -524,12 +552,12 @@ function SocialGrowthSection() {
           {socialPlatforms.map((platform) => {
             const Icon = platform.icon;
             return (
+              /* backdrop-blur-xl removed here too — solid card background,
+                 shadow kept but only applied via CSS transition on hover */
               <motion.div
                 key={platform.name}
                 variants={fadeUp}
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.35, ease: EASE }}
-                className="group relative overflow-hidden rounded-2xl border border-purple-900/10 bg-white/60 backdrop-blur-xl p-6 shadow-[0_8px_40px_rgba(124,58,237,0.06)] transition-all duration-300 hover:border-purple-500/30 hover:shadow-[0_12px_48px_rgba(124,58,237,0.14)]"
+                className="group relative overflow-hidden rounded-2xl border border-purple-900/10 bg-white p-6 shadow-[0_8px_40px_rgba(124,58,237,0.06)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-purple-500/30 hover:shadow-[0_12px_48px_rgba(124,58,237,0.14)]"
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/20 to-purple-700/10 transition-transform duration-300 group-hover:scale-110">
@@ -578,14 +606,16 @@ function ClosingSection() {
   return (
     <section
       ref={ref}
+      style={{ contain: "content" }}
       className="relative overflow-hidden bg-[#06070D] px-5 sm:px-8 lg:px-12 py-24 sm:py-32"
     >
       <div className="pointer-events-none absolute inset-0">
         <div
-          className="absolute bottom-0 left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 translate-y-1/3 rounded-full blur-3xl"
+          className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 translate-y-1/3 rounded-full blur-2xl will-change-transform sm:h-[30rem] sm:w-[30rem] sm:blur-3xl"
           style={{
             background:
               "radial-gradient(circle, rgba(124,58,237,0.2), transparent 70%)",
+            transform: "translateZ(0) translateX(-50%) translateY(33%)",
           }}
         />
       </div>

@@ -17,14 +17,31 @@ const WHATSAPP_NUMBER = "918847266521"; // country code 91 (India) + number
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
 };
 
 const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1, delayChildren: 0.08 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
+
+/*
+  PERF NOTE — same root causes as the About page:
+    1. `backdrop-blur-xl` / `backdrop-blur-sm` on the form card, contact-info
+       cards, AND every text input — that's ~6 backdrop-filter elements on
+       one screen. Backdrop-filter forces a re-composite of everything
+       behind the element on every scroll frame, which is the single
+       biggest cause of mobile jank. All removed, replaced with solid /
+       near-solid backgrounds that look basically identical.
+    2. Oversized `blur-3xl` decorative orbs (h-120/h-104, i.e. ~30rem) at
+       full size on phones. Scaled down on mobile via responsive classes.
+    3. The icon glow inside each contact card used `blur-3xl` — expensive
+       even when hidden at opacity-0, since the browser still has to
+       manage it as a composited layer. Reduced to a cheaper blur-xl.
+    4. Added CSS `contain: content` on the page container to isolate
+       layout/paint work.
+*/
 
 /* ------------------------------------------------------------------ */
 /*  Background: light bg + purple grid                                 */
@@ -33,8 +50,9 @@ const stagger: Variants = {
 function GridBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Dot/line grid hidden on mobile — negligible visual payoff for its paint cost there */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 hidden sm:block"
         style={{
           backgroundImage:
             "linear-gradient(to right, rgba(124,58,237,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(124,58,237,0.08) 1px, transparent 1px)",
@@ -42,17 +60,19 @@ function GridBackdrop() {
         }}
       />
       <div
-        className="absolute -top-40 right-[-10%] h-120 w-120 rounded-full blur-3xl"
+        className="absolute -top-24 right-[-10%] h-64 w-64 rounded-full blur-2xl will-change-transform sm:-top-40 sm:h-[30rem] sm:w-[30rem] sm:blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(168,85,247,0.18), transparent 70%)",
+          transform: "translateZ(0)",
         }}
       />
       <div
-        className="absolute bottom-[-15%] left-[-10%] h-104 w-104 rounded-full blur-3xl"
+        className="absolute bottom-[-15%] left-[-10%] h-56 w-56 rounded-full blur-2xl will-change-transform sm:h-[26rem] sm:w-[26rem] sm:blur-3xl"
         style={{
           background:
             "radial-gradient(circle, rgba(124,58,237,0.14), transparent 70%)",
+          transform: "translateZ(0)",
         }}
       />
     </div>
@@ -111,42 +131,46 @@ function ContactInfoCard({
   href: string;
 }) {
   return (
+    /* backdrop-blur-xl removed — solid near-opaque background instead.
+       Hover lift/shadow now runs on pure CSS transitions. */
     <motion.a
       variants={fadeUp}
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-      className="group relative flex w-full items-center gap-5 overflow-hidden rounded-2xl border border-purple-900/10 bg-white/60 backdrop-blur-xl px-6 py-6 text-left shadow-[0_8px_40px_rgba(124,58,237,0.06)] transition-all duration-500 hover:-translate-y-1.5 hover:border-purple-500/30 hover:shadow-[0_16px_56px_rgba(124,58,237,0.2)]"
+      className="group relative flex w-full items-center gap-5 overflow-hidden rounded-2xl border border-purple-900/10 bg-white px-6 py-6 text-left shadow-[0_8px_40px_rgba(124,58,237,0.06)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-purple-500/30 hover:shadow-[0_16px_56px_rgba(124,58,237,0.2)]"
     >
       {/* Soft gradient wash that fades in on hover */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-purple-500/[0.07] via-transparent to-purple-700/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-purple-500/[0.07] via-transparent to-purple-700/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-      {/* Radial glow behind the icon */}
-      <div className="pointer-events-none absolute -left-8 top-1/2 h-28 w-28 -translate-y-1/2 rounded-full bg-purple-500/20 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      {/* Radial glow behind the icon — lighter blur than before, still cheap when idle */}
+      <div className="pointer-events-none absolute -left-8 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-purple-500/20 blur-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* Top accent line */}
-      <div className="absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-purple-400/60 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-purple-400/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* Icon badge */}
-      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-purple-500/20 to-purple-700/10 border border-purple-500/20 shadow-[0_4px_16px_rgba(168,85,247,0.15)] transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_8px_24px_rgba(168,85,247,0.3)] group-hover:from-purple-500 group-hover:to-purple-700">
-        <Icon className="h-6 w-6 text-purple-600 transition-colors duration-500 group-hover:text-white" />
+      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-purple-500/20 to-purple-700/10 border border-purple-500/20 shadow-[0_4px_16px_rgba(168,85,247,0.15)] transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_8px_24px_rgba(168,85,247,0.3)] group-hover:from-purple-500 group-hover:to-purple-700">
+        <Icon className="h-6 w-6 text-purple-600 transition-colors duration-300 group-hover:text-white" />
       </div>
 
       <div className="relative min-w-0">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-purple-600/70">
           {label}
         </p>
-        <p className="truncate text-sm sm:text-base font-semibold text-[#0c0a14] transition-colors duration-500 group-hover:text-purple-700">
+        <p className="truncate text-sm sm:text-base font-semibold text-[#0c0a14] transition-colors duration-300 group-hover:text-purple-700">
           {value}
         </p>
-        <div className="mt-2 h-px w-8 bg-linear-to-r from-purple-500 to-purple-700 opacity-40 transition-all duration-500 group-hover:w-14 group-hover:opacity-100" />
+        <div className="mt-2 h-px w-8 bg-linear-to-r from-purple-500 to-purple-700 opacity-40 transition-all duration-300 group-hover:w-14 group-hover:opacity-100" />
       </div>
     </motion.a>
   );
 }
 
+/* backdrop-blur-sm removed from inputs — solid near-opaque background,
+   focus ring/background swap still gives the same "lift" feel */
 const inputBase =
-  "w-full rounded-xl border bg-white/70 backdrop-blur-sm pr-4 py-3.5 text-sm text-[#0c0a14] placeholder:text-gray-400 outline-none transition-all duration-200 focus:bg-white focus:ring-4 focus:ring-purple-500/10";
+  "w-full rounded-xl border bg-white/90 pr-4 py-3.5 text-sm text-[#0c0a14] placeholder:text-gray-400 outline-none transition-[background-color,box-shadow] duration-200 focus:bg-white focus:ring-4 focus:ring-purple-500/10";
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                                */
@@ -220,7 +244,10 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#fbfaff]">
+    <main
+      style={{ contain: "content" }}
+      className="relative min-h-screen overflow-hidden bg-[#fbfaff]"
+    >
       <GridBackdrop />
 
       <section className="relative px-5 sm:px-8 lg:px-12 pt-32 sm:pt-40 pb-20 sm:pb-28">
@@ -260,14 +287,14 @@ export default function ContactPage() {
           </motion.div>
         </div>
 
-        {/* Form card */}
+        {/* Form card — backdrop-blur-xl removed, solid near-opaque background */}
         <motion.div
           initial="hidden"
           animate={inView ? "show" : "hidden"}
           variants={fadeUp}
           className="relative mx-auto max-w-2xl"
         >
-          <div className="relative rounded-3xl border border-purple-900/10 bg-white/60 backdrop-blur-xl p-6 sm:p-10 shadow-[0_8px_40px_rgba(124,58,237,0.08)]">
+          <div className="relative rounded-3xl border border-purple-900/10 bg-white/95 p-6 sm:p-10 shadow-[0_8px_40px_rgba(124,58,237,0.08)]">
             {/* Gradient accent line on top */}
             <div className="absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-purple-400/60 to-transparent" />
 

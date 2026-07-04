@@ -221,6 +221,7 @@ const categories: Category[] = [
 
 /* ------------------------------------------------------------------ */
 /*  Decorative grid background (white-section variant)                 */
+/*  Static (no animate prop) → painted once, no per-frame cost.       */
 /* ------------------------------------------------------------------ */
 
 function GridBackdrop() {
@@ -268,6 +269,16 @@ function DarkBackdrop() {
 
 /* ------------------------------------------------------------------ */
 /*  Service card                                                       */
+/*                                                                      */
+/*  Perf note: `backdrop-blur-xl` was applied to every card (24 total  */
+/*  across all categories). Backdrop-filter requires its own offscreen */
+/*  render pass per element — cheap for one card, expensive when up to */
+/*  6 of them fade in together via the stagger animation. It's now     */
+/*  desktop/tablet only (sm: and up); mobile gets a solid tinted       */
+/*  background that reads the same against these gradient sections    */
+/*  without the compositing cost. willChange + translateZ(0) added so  */
+/*  the browser promotes the card to its own layer up front instead of */
+/*  deciding mid-animation.                                            */
 /* ------------------------------------------------------------------ */
 
 function ServiceCard({
@@ -283,11 +294,13 @@ function ServiceCard({
       variants={fadeUp}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.35, ease: EASE }}
+      style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
       className={[
-        "group relative rounded-2xl p-6 sm:p-7 backdrop-blur-xl border transition-colors duration-300",
+        "group relative rounded-2xl p-6 sm:p-7 border transition-colors duration-300",
+        "sm:backdrop-blur-xl",
         onDark
-          ? "bg-white/3 border-white/10 hover:border-purple-400/40 hover:bg-white/5"
-          : "bg-white/70 border-purple-900/10 hover:border-purple-400/50 shadow-[0_4px_24px_rgba(124,58,237,0.06)] hover:shadow-[0_8px_32px_rgba(124,58,237,0.14)]",
+          ? "bg-[#131022] sm:bg-white/3 border-white/10 hover:border-purple-400/40 sm:hover:bg-white/5"
+          : "bg-white/90 sm:bg-white/70 border-purple-900/10 hover:border-purple-400/50 shadow-[0_4px_24px_rgba(124,58,237,0.06)] hover:shadow-[0_8px_32px_rgba(124,58,237,0.14)]",
       ].join(" ")}
     >
       <div
