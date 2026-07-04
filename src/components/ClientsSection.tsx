@@ -112,7 +112,7 @@ const marqueeCss = `
 @media (max-width: 640px) {
   .marquee-track-left,
   .marquee-track-right {
-    animation-duration: 28s;
+    animation-duration: 55s;
   }
 }
 `;
@@ -131,7 +131,7 @@ function LogoItem({
       loading="eager"
       decoding="async"
       draggable={false}
-      className="h-24 w-auto max-w-[150px] shrink-0 object-contain transition-transform duration-200 ease-out hover:scale-105 sm:h-16 sm:max-w-[170px] md:h-24 md:max-w-[220px] lg:h-28 lg:max-w-[240px]"
+      className="h-24 w-auto max-w-37.5 shrink-0 object-contain transition-transform duration-200 ease-out hover:scale-105 sm:h-16 sm:max-w-42.5 md:h-24 md:max-w-55 lg:h-28 lg:max-w-60"
     />
   );
 }
