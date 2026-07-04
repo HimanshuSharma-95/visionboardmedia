@@ -117,7 +117,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="tel:+11234567890"
+                  href="tel:+919653111532"
                   className="flex items-center gap-2 group"
                 >
                   <MdOutlinePhone className="h-4 w-4 text-white transition-colors group-hover:text-purple-300 shrink-0" />
