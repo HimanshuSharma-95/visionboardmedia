@@ -13,292 +13,251 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 pt-20 sm:pt-28 lg:pt-0">
-      <CursorGlow />
+      {/* CursorGlow only matters with a real mouse cursor — skip it on
+          touch/mobile so it isn't attaching listeners or painting for
+          nothing. */}
+      <div className="hidden md:block">
+        <CursorGlow />
+      </div>
+
+      {/* Plain <style> (not styled-jsx) — global keyframes, prefixed class
+          names to avoid collisions. Runs on the compositor thread instead
+          of Framer Motion's JS/rAF loop, which is what was causing the
+          mobile jank: several infinite JS-driven animations competing with
+          React re-renders on a phone CPU. */}
+      <style>{`
+        @keyframes heroGlowPulse {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+          50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+        }
+        .hero-glow-pulse {
+          animation: heroGlowPulse 8s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+
+        @keyframes heroFloat1 {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
+        }
+        @keyframes heroFloat2 {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(15px); }
+        }
+        @keyframes heroFloat3 {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        .hero-float-1 { animation: heroFloat1 4s ease-in-out infinite; }
+        .hero-float-2 { animation: heroFloat2 5s ease-in-out infinite; }
+        .hero-float-3 { animation: heroFloat3 6s ease-in-out infinite; }
+
+        @keyframes heroShimmerSweep {
+          0% { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
+        .hero-shimmer-text {
+          background-image: linear-gradient(
+            100deg,
+            #09090b 30%,
+            #9333ea 45%,
+            #a855f7 50%,
+            #9333ea 55%,
+            #09090b 70%
+          );
+          background-size: 250% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: heroShimmerSweep 4.5s linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-glow-pulse,
+          .hero-float-1,
+          .hero-float-2,
+          .hero-float-3,
+          .hero-shimmer-text {
+            animation: none !important;
+          }
+        }
+      `}</style>
 
       {/* Grid */}
-
       <div
         className="
         absolute
-
         inset-0
-
         bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)]
-
         bg-size-[50px_50px]
       "
       />
 
-      {/* Purple Glow */}
-
-      <motion.div
-        animate={{
-          scale: [1, 1.08, 1],
-
-          opacity: [0.7, 1, 0.7],
-        }}
-        transition={{
-          duration: 8,
-
-          repeat: Infinity,
-        }}
+      {/* Purple Glow — smaller + less blurred on mobile. A large blurred,
+          animated layer is one of the most expensive things to repaint
+          every frame on a phone GPU; it scales back up to full size/blur
+          on bigger screens. */}
+      <div
         className="
+        hero-glow-pulse
+        transform-gpu
         absolute
-
         left-1/2
-
         top-[42%]
-
-        h-212.5
-
-        w-212.5
-
-        -translate-x-1/2
-
-        -translate-y-1/2
-
+        h-[280px]
+        w-[280px]
         rounded-full
-
         bg-[radial-gradient(circle,rgba(124,58,237,0.16)_0%,transparent_70%)]
-
-        blur-[45px]
+        blur-xl
+        sm:h-125
+        sm:w-125
+        sm:blur-2xl
+        lg:h-212.5
+        lg:w-212.5
+        lg:blur-[45px]
       "
       />
 
-      {/* Floating Cards */}
-
-      <motion.div
-        animate={{
-          y: [0, -15, 0],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-        }}
+      {/* Floating Cards — CSS transforms, no backdrop-blur on mobile
+          (backdrop-filter is very costly to recompute every frame while
+          the card itself is also animating). */}
+      <div
         className="
-absolute
-
-top-[15%]
-
-left-10
-
-sm:top-[24%]
-sm:left-5
-
-md:top-[26%]
-md:left-8
-
-lg:top-[30%]
-lg:left-[8%]
-
-xl:left-[10%]
-
-z-20
-
-flex items-center gap-2
-
-rounded-2xl
-
-border border-zinc-200
-
-bg-white/80
-
-px-3 py-2
-
-shadow-xl
-
-backdrop-blur-xl
-
-transition-all duration-300
-
-hover:-translate-y-1
-
-hover:scale-105
-
-hover:bg-white/90
-
-hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
-"
+        hero-float-1
+        transform-gpu
+        absolute
+        top-[15%]
+        left-10
+        sm:top-[24%]
+        sm:left-5
+        md:top-[26%]
+        md:left-8
+        lg:top-[30%]
+        lg:left-[8%]
+        xl:left-[10%]
+        z-20
+        flex items-center gap-2
+        rounded-2xl
+        border border-zinc-200
+        bg-white/95
+        px-3 py-2
+        shadow-xl
+        backdrop-blur-none
+        transition-all duration-300
+        hover:-translate-y-1
+        hover:scale-105
+        hover:bg-white/90
+        hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
+        md:bg-white/80
+        md:backdrop-blur-xl
+      "
       >
         <FaInstagram size={18} className="text-purple-600" />
 
         <span className="hidden text-sm font-medium text-zinc-700 sm:block">
           Social Media
         </span>
-      </motion.div>
+      </div>
 
-      <motion.div
-        animate={{
-          y: [0, 15, 0],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-        }}
+      <div
         className="
-  absolute
-
-  right-7
-
-  top-[22%]
-
-  z-20
-
-  flex
-
-  items-center
-
-  gap-2
-
-  rounded-2xl
-
-  border
-
-  border-zinc-200
-
-  bg-white/80
-
-  px-3
-
-  py-2
-
-  shadow-xl
-
-  backdrop-blur-xl
-
-  transition-all
-
-  duration-300
-
-  hover:-translate-y-1
-
-  hover:scale-105
-
-  hover:bg-white/90
-
-  hover:shadow-[0_20px_60px_rgba(34,197,94,0.18)]
-
-  sm:right-6
-
-  md:right-10
-
-  lg:right-[8%]
-"
+        hero-float-2
+        transform-gpu
+        absolute
+        right-7
+        top-[22%]
+        z-20
+        flex
+        items-center
+        gap-2
+        rounded-2xl
+        border
+        border-zinc-200
+        bg-white/95
+        px-3
+        py-2
+        shadow-xl
+        backdrop-blur-none
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:scale-105
+        hover:bg-white/90
+        hover:shadow-[0_20px_60px_rgba(34,197,94,0.18)]
+        sm:right-6
+        md:right-10
+        md:bg-white/80
+        md:backdrop-blur-xl
+        lg:right-[8%]
+      "
       >
         <FaWhatsapp size={18} className="text-green-600" />
 
         <span className="hidden text-sm font-medium text-zinc-700 sm:block">
           WhatsApp Leads
         </span>
-      </motion.div>
+      </div>
 
-      <motion.div
-        animate={{
-          y: [0, -12, 0],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-        }}
+      <div
         className="
-  absolute
-
-  bottom-[28%]
-
-  right-20
-
-  z-20
-
-  flex
-
-  -translate-x-1/2
-
-  items-center
-
-  gap-2
-
-  rounded-2xl
-
-  border
-
-  border-zinc-200
-
-  bg-white/80
-
-  px-3
-
-  py-2
-
-  shadow-xl
-
-  backdrop-blur-xl
-
-  transition-all
-
-  duration-300
-
-  hover:-translate-y-1
-
-  hover:scale-105
-
-  hover:bg-white/90
-
-  hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
-
-  lg:left-auto
-
-  lg:right-[8%]
-
-  lg:translate-x-0
-"
+        hero-float-3
+        transform-gpu
+        absolute
+        bottom-[28%]
+        right-20
+        z-20
+        flex
+        -translate-x-1/2
+        items-center
+        gap-2
+        rounded-2xl
+        border
+        border-zinc-200
+        bg-white/95
+        px-3
+        py-2
+        shadow-xl
+        backdrop-blur-none
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:scale-105
+        hover:bg-white/90
+        hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
+        md:bg-white/80
+        md:backdrop-blur-xl
+        lg:left-auto
+        lg:right-[8%]
+        lg:translate-x-0
+      "
       >
         <Globe size={18} className="text-purple-600" />
 
         <span className="hidden text-sm font-medium text-zinc-700 sm:block">
           Websites Development
         </span>
-      </motion.div>
+      </div>
 
       {/* Content */}
 
       <div
         className="
         relative
-
         z-10
-
         flex
-
         w-full
-
         max-w-6xl
-
         flex-col
-
         items-center
-
         pt-10
-
         text-center
       "
       >
         {/* Logo */}
 
         <motion.div
-          initial={{
-            opacity: 0,
-
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-
-            y: 0,
-          }}
-          transition={{
-            duration: 0.5,
-          }}
-          //   className="m"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
           <Image
             src="/vbmlogo.png"
@@ -308,13 +267,9 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
             priority
             className="
             h-auto
-
             w-55
-
             object-contain
-
             md:w-[320px]
-
             lg:w-100
           "
           />
@@ -323,121 +278,27 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
         {/* Heading */}
 
         <motion.h1
-          initial={{
-            opacity: 0,
-
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-
-            y: 0,
-          }}
-          transition={{
-            duration: 0.8,
-          }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
           className="
           max-w-5xl
-
           text-5xl
-
           font-bold
-
           leading-[1.05]
-
           tracking-tight
-
           text-zinc-950
-
           md:text-7xl
-          
         "
         >
-          <span className="relative inline-block">
-            {/*
-              Animated highlight behind "Grow online":
-              1) thin underline grows left -> right (scaleX 0 -> 1, origin left)
-              2) underline grows in height, covering the text (height 12% -> 100%)
-              3) holds briefly while text is fully highlighted
-              4) shrinks back down to a thin underline (height 100% -> 12%)
-              5) underline sweeps out right -> left (scaleX 1 -> 0, origin right) and disappears
-              6) pauses 1.6s (repeatDelay), then the whole sequence repeats
-
-              The text itself is two stacked layers:
-              - a normal dark base layer (always visible)
-              - a white "inverted" layer clipped from the BOTTOM up, using the
-                exact same height keyframes as the bar below. So only the
-                portion of each letter currently covered by the purple bar
-                shows white -- e.g. when the bar is at 40% height, only the
-                bottom 40% of each letter is white, the top 60% stays dark.
-            */}
-            <motion.span
-              aria-hidden="true"
-              initial={{ scaleX: 0, height: "12%" }}
-              animate={{
-                scaleX: [0, 1, 1, 1, 1, 0],
-                height: ["12%", "12%", "100%", "100%", "12%", "12%"],
-                originX: [0, 0, 0, 1, 1, 1],
-              }}
-              transition={{
-                duration: 6.5,
-                times: [0, 0.22, 0.4, 0.62, 0.78, 1],
-                repeat: Infinity,
-                repeatDelay: 1.6,
-                ease: "easeInOut",
-              }}
-              className="
-                absolute
-
-                bottom-0
-
-                left-0
-
-                z-0
-
-                w-full
-
-                rounded-sm
-
-                bg-linear-to-r
-
-                from-purple-600
-
-                to-violet-500
-              "
-            />
-
-            {/* Base layer: always-dark text */}
-            <span className="relative z-10 text-zinc-950">Grow online</span>
-
-            {/* Inverted layer: white text, clipped from the bottom up to
-                match the bar's current height % at every instant */}
-            <motion.span
-              aria-hidden="true"
-              initial={{ clipPath: "inset(88% 0% 0% 0%)" }}
-              animate={{
-                clipPath: [
-                  "inset(88% 0% 0% 0%)", // 0%    bar at 12% height -> top 88% clipped away
-                  "inset(88% 0% 0% 0%)", // 22%   bar still 12%
-                  "inset(0% 0% 0% 0%)", // 40%   bar at 100% -> nothing clipped, fully white
-                  "inset(0% 0% 0% 0%)", // 62%   bar still 100% (hold)
-                  "inset(88% 0% 0% 0%)", // 78%   bar back to 12%
-                  "inset(88% 0% 0% 0%)", // 100%  bar at 12%, sweep-out done
-                ],
-              }}
-              transition={{
-                duration: 6.5,
-                times: [0, 0.22, 0.4, 0.62, 0.78, 1],
-                repeat: Infinity,
-                repeatDelay: 1.6,
-                ease: "easeInOut",
-              }}
-              className="absolute inset-0 z-20 text-white"
-            >
-              Grow online
-            </motion.span>
-          </span>{" "}
-          with systems
+          {/* Shimmer replaces the old two-layer clipPath/height animation.
+              That version animated `height` (a layout property — forces a
+              reflow every frame) and `clip-path` on two stacked absolutely
+              positioned spans, driven by Framer Motion's JS loop. This gets
+              the same "light sweeps through the text" effect with a single
+              `background-position` animation: no layout impact, cheap for
+              mobile GPUs. */}
+          <span className="hero-shimmer-text">Grow online</span> with systems
           <br />
           <span className="bg-linear-to-r from-purple-600 to-violet-500 bg-clip-text text-transparent">
             that actually convert.
@@ -447,28 +308,14 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
         {/* Description */}
 
         <motion.p
-          initial={{
-            opacity: 0,
-
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-
-            y: 0,
-          }}
-          transition={{
-            duration: 1,
-          }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
           className="
           mt-8
-
           max-w-3xl
-
           text-lg
-
           leading-relaxed
-
           text-zinc-600
         "
         >
@@ -480,28 +327,14 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
         {/* Buttons */}
 
         <motion.div
-          initial={{
-            opacity: 0,
-
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-
-            y: 0,
-          }}
-          transition={{
-            duration: 1.2,
-          }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2 }}
           className="
           mt-12
-
           flex
-
           flex-col
-
           gap-4
-
           sm:flex-row
         "
         >
