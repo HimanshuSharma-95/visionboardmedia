@@ -245,10 +245,7 @@ export default function VbmLine() {
               />
               <div className="ticker-track flex gap-7 items-center">
                 {[...words, ...words].map((w, i) => (
-                  <span
-                    key={i}
-                    className="shrink-0 flex items-center gap-7"
-                  >
+                  <span key={i} className="shrink-0 flex items-center gap-7">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-300/50 whitespace-nowrap">
                       {w}
                     </span>
