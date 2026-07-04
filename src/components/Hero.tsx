@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
 import { Globe } from "lucide-react";
@@ -11,6 +11,13 @@ import CursorGlow from "./CursorGlow";
 import Link from "next/link";
 
 export default function Hero() {
+  const prefersReducedMotion = useReducedMotion();
+
+  // Disable heavy infinite loops for users who've asked for reduced motion
+  // (accessibility setting on iOS/Android) — free perf win, no visual change
+  // for everyone else.
+  const loop = !prefersReducedMotion;
+
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 pt-20 sm:pt-28 lg:pt-0">
       <CursorGlow />
@@ -30,18 +37,27 @@ export default function Hero() {
       />
 
       {/* Purple Glow */}
-
+      {/*
+        Smaller blur radius on mobile (blur-2xl) and full blur on larger
+        screens (md:blur-[45px]) — the blur filter is the most GPU-expensive
+        part of this element, and mobile GPUs choke on large blurred layers
+        animating every frame. scale/opacity stay as transform/opacity only,
+        so this is still compositor-driven, just lighter to paint.
+      */}
       <motion.div
-        animate={{
-          scale: [1, 1.08, 1],
-
-          opacity: [0.7, 1, 0.7],
-        }}
+        animate={
+          loop
+            ? {
+                scale: [1, 1.08, 1],
+                opacity: [0.7, 1, 0.7],
+              }
+            : undefined
+        }
         transition={{
           duration: 8,
-
           repeat: Infinity,
         }}
+        style={{ willChange: "transform, opacity" }}
         className="
         absolute
 
@@ -61,20 +77,21 @@ export default function Hero() {
 
         bg-[radial-gradient(circle,rgba(124,58,237,0.16)_0%,transparent_70%)]
 
-        blur-[45px]
+        blur-2xl
+
+        md:blur-[45px]
       "
       />
 
       {/* Floating Cards */}
 
       <motion.div
-        animate={{
-          y: [0, -15, 0],
-        }}
+        animate={loop ? { y: [0, -15, 0] } : undefined}
         transition={{
           duration: 4,
           repeat: Infinity,
         }}
+        style={{ willChange: "transform" }}
         className="
 absolute
 
@@ -128,13 +145,12 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
       </motion.div>
 
       <motion.div
-        animate={{
-          y: [0, 15, 0],
-        }}
+        animate={loop ? { y: [0, 15, 0] } : undefined}
         transition={{
           duration: 5,
           repeat: Infinity,
         }}
+        style={{ willChange: "transform" }}
         className="
   absolute
 
@@ -193,13 +209,12 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
       </motion.div>
 
       <motion.div
-        animate={{
-          y: [0, -12, 0],
-        }}
+        animate={loop ? { y: [0, -12, 0] } : undefined}
         transition={{
           duration: 6,
           repeat: Infinity,
         }}
+        style={{ willChange: "transform" }}
         className="
   absolute
 
@@ -357,34 +372,48 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
             {/*
               Animated highlight behind "Grow online":
               1) thin underline grows left -> right (scaleX 0 -> 1, origin left)
-              2) underline grows in height, covering the text (height 12% -> 100%)
+              2) underline grows in height, covering the text
               3) holds briefly while text is fully highlighted
-              4) shrinks back down to a thin underline (height 100% -> 12%)
+              4) shrinks back down to a thin underline
               5) underline sweeps out right -> left (scaleX 1 -> 0, origin right) and disappears
-              6) pauses 1.6s (repeatDelay), then the whole sequence repeats
+              6) pauses briefly, then the whole sequence repeats
+
+              PERF NOTE: this now animates `scaleY` (with transformOrigin:
+              "bottom") instead of the `height` property. Animating `height`
+              forces the browser to recompute layout + repaint on every
+              frame — this was the main source of jank on phones. `scaleY`
+              is a transform, so it's handled entirely on the compositor
+              thread and stays smooth even on lower-end devices.
 
               The text itself is two stacked layers:
               - a normal dark base layer (always visible)
-              - a white "inverted" layer clipped from the BOTTOM up, using the
-                exact same height keyframes as the bar below. So only the
+              - a white "inverted" layer clipped from the BOTTOM up, using
+                the same progress values as the bar below, so only the
                 portion of each letter currently covered by the purple bar
-                shows white -- e.g. when the bar is at 40% height, only the
-                bottom 40% of each letter is white, the top 60% stays dark.
+                shows white.
             */}
             <motion.span
               aria-hidden="true"
-              initial={{ scaleX: 0, height: "12%" }}
-              animate={{
-                scaleX: [0, 1, 1, 1, 1, 0],
-                height: ["12%", "12%", "100%", "100%", "12%", "12%"],
-                originX: [0, 0, 0, 1, 1, 1],
-              }}
+              initial={{ scaleX: 0, scaleY: 0.12, originY: 1 }}
+              animate={
+                loop
+                  ? {
+                      scaleX: [0, 1, 1, 1, 1, 0],
+                      scaleY: [0.12, 0.12, 1, 1, 0.12, 0.12],
+                      originX: [0, 0, 0, 1, 1, 1],
+                      originY: 1,
+                    }
+                  : { scaleX: 0, scaleY: 0.12, originY: 1 }
+              }
               transition={{
                 duration: 6.5,
                 times: [0, 0.22, 0.4, 0.62, 0.78, 1],
-                repeat: Infinity,
+                repeat: loop ? Infinity : 0,
                 repeatDelay: 1.6,
                 ease: "easeInOut",
+              }}
+              style={{
+                willChange: "transform",
               }}
               className="
                 absolute
@@ -394,6 +423,8 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
                 left-0
 
                 z-0
+
+                h-full
 
                 w-full
 
@@ -411,27 +442,32 @@ hover:shadow-[0_20px_60px_rgba(124,58,237,0.18)]
             <span className="relative z-10 text-zinc-950">Grow online</span>
 
             {/* Inverted layer: white text, clipped from the bottom up to
-                match the bar's current height % at every instant */}
+                match the bar's current scaleY at every instant */}
             <motion.span
               aria-hidden="true"
               initial={{ clipPath: "inset(88% 0% 0% 0%)" }}
-              animate={{
-                clipPath: [
-                  "inset(88% 0% 0% 0%)", // 0%    bar at 12% height -> top 88% clipped away
-                  "inset(88% 0% 0% 0%)", // 22%   bar still 12%
-                  "inset(0% 0% 0% 0%)", // 40%   bar at 100% -> nothing clipped, fully white
-                  "inset(0% 0% 0% 0%)", // 62%   bar still 100% (hold)
-                  "inset(88% 0% 0% 0%)", // 78%   bar back to 12%
-                  "inset(88% 0% 0% 0%)", // 100%  bar at 12%, sweep-out done
-                ],
-              }}
+              animate={
+                loop
+                  ? {
+                      clipPath: [
+                        "inset(88% 0% 0% 0%)", // 0%    bar at 12% -> top 88% clipped away
+                        "inset(88% 0% 0% 0%)", // 22%   bar still 12%
+                        "inset(0% 0% 0% 0%)", // 40%   bar at 100% -> nothing clipped
+                        "inset(0% 0% 0% 0%)", // 62%   bar still 100% (hold)
+                        "inset(88% 0% 0% 0%)", // 78%   bar back to 12%
+                        "inset(88% 0% 0% 0%)", // 100%  bar at 12%, sweep-out done
+                      ],
+                    }
+                  : { clipPath: "inset(88% 0% 0% 0%)" }
+              }
               transition={{
                 duration: 6.5,
                 times: [0, 0.22, 0.4, 0.62, 0.78, 1],
-                repeat: Infinity,
+                repeat: loop ? Infinity : 0,
                 repeatDelay: 1.6,
                 ease: "easeInOut",
               }}
+              style={{ willChange: "clip-path" }}
               className="absolute inset-0 z-20 text-white"
             >
               Grow online
